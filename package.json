@@ -1,5 +1,5 @@
 {
-  "name": "openshift-cartridge-nodejs-template",
+  "name": "cs3630-cookbook-api",
   "version": "1.0.1",
   "description": "Custom Node.js cartridge for OpenShift - sample application",
   "private": true,
@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node --use_strict start.js"
   },
-  "author": "Ionut-Cristian Florescu <ionut.florescu@gmail.com>",
+  "author": "Jeremy J. Johnson",
   "license": "ISC",
   "dependencies": {
     "express": "^4.15.2"
