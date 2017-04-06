@@ -23,7 +23,15 @@ let server = http.createServer((req, res) => {
     } else if (url.startsWith('/api/')) {
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Cache-Control', 'no-cache, no-store');
-        res.end(JSON.stringify(api(req.method, url.slice(4))));
+
+        const results = api(req.method, url.slice(4));
+        
+        if (results !== undefined) {
+            res.end(JSON.stringify(results));
+        } else {
+            res.writeHead(400);
+            res.end('Bad request');
+        }
     } else {
         fs.readFile(`./static${url}`, (err, data) => {
             if (err) {
