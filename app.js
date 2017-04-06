@@ -13,25 +13,26 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache, no-store');
+    console.log(req.method, req.url);
     next();
 });
 
 // Required health check
 app.get('/health', (req, res) => {
-    console.log(req);
+    // console.log(req);
     res.writeHead(200);
     res.end();
 });
 
 // Required health check
 app.get('/hello', (req, res) => {
-    console.log(req);
+    // console.log(req);
     res.writeHead(200);
     res.end('Hello world!');
 });
 
 app.get('/', (req, res) => {
-    console.log(req);
+    // console.log(req);
     res.writeHead(200);
     res.send('Hello world!');
     res.send(data);
@@ -39,13 +40,13 @@ app.get('/', (req, res) => {
 
 // API
 app.get('/api/recipe/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})', (req, res) => {
-    console.log(req);
+    // console.log(req);
     console.log(req.params.guid);
     res.writeHead(200);
     res.end();
 });
 
-app.listen(process.env.NODE_PORT || 3080, () => {
+app.listen(process.env.NODE_PORT || 3080, process.env.NODE_IP || 'localhost', () => {
     console.log(`Application worker ${process.pid} started...`);
 });
 
