@@ -1,7 +1,7 @@
 {
   "name": "cs3630-cookbook-api",
   "version": "1.0.1",
-  "description": "Custom Node.js cartridge for OpenShift - sample application",
+  "description": "CS 3630 - Final Project API",
   "private": true,
   "main": "start.js",
   "scripts": {
@@ -10,6 +10,7 @@
   "author": "Jeremy J. Johnson",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "mongojs": "^2.4.0"
   }
 }

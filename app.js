@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 
+const guid = require('./api/guid');
+const recipes = require('./api/recipes');
+
 let data = [
     { x: 1, y: 10 },
     { x: 2, y: 5 },
@@ -33,11 +36,16 @@ app.get('/hello', (req, res) => {
     res.end('Hello world!');
 });
 
-app.get('/recipe/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})', (req, res) => {
-    // console.log(req);
-    console.log(req.params.guid);
-    res.writeHead(200);
-    res.end();
+app.get('/api', (req, res) => {
+    res.send(data);
+});
+
+app.get('/api/guid', (req, res) => {
+    res.send(guid());
+});
+
+app.get('/api/recipe/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})', (req, res) => {
+    res.send(recipes.read(req.params.guid));
 });
 
 app.listen(process.env.NODE_PORT || 3080, process.env.NODE_IP || 'localhost', () => {
