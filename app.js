@@ -8,24 +8,39 @@ let data = [
 ];
 
 app.use((req, res, next) => {
-    // res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    // res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache, no-store');
     next();
 });
 
-app.get('/', (req, res) => {
-    // res.send('Hello world!')
-    console.log(req);
-    res.writeHead(200);
-    res.send(data);
-});
-
 // Required health check
 app.get('/health', (req, res) => {
     console.log(req);
+    res.writeHead(200);
+    res.end();
+});
+
+// Required health check
+app.get('/hello', (req, res) => {
+    console.log(req);
+    res.writeHead(200);
+    res.end('Hello world!');
+});
+
+app.get('/', (req, res) => {
+    console.log(req);
+    res.writeHead(200);
+    res.send('Hello world!');
+    res.send(data);
+});
+
+// API
+app.get('/api/recipe/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})', (req, res) => {
+    console.log(req);
+    console.log(req.params.guid);
     res.writeHead(200);
     res.end();
 });
