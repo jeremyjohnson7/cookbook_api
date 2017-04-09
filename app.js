@@ -80,6 +80,14 @@ app.route('/api/recipes/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}
             if (id)
                 res.send(id);
         });
+    })
+    .delete((req, res) => {
+        db.recipes.remove({_id: req.params.guid}, (err, id) => {
+            if (err)
+                throw err;
+            if (id)
+                res.send(id);
+        });
     });
 
 // Get all recipes that belong to the specified user
