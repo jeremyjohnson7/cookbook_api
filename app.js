@@ -1,8 +1,10 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 
+const db = require('./api/db');
 const guid = require('./api/guid');
-const recipes = require('./api/recipes');
+// const recipes = require('./api/recipes');
 
 let data = [
     { x: 1, y: 10 },
@@ -10,13 +12,25 @@ let data = [
     { x: 3, y: 15 }
 ];
 
+// Allows access to req.body
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+// Set headers
 app.use((req, res, next) => {
-    // res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin',
+        `http://${process.env.NODE_IP || 'localhost'}:${process.env.NODE_PORT || 3080}`);
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache, no-store');
+    next();
+});
+
+// Debug logging
+app.use((req, res, next) => {
     console.log(req.method, req.url);
+    if (req.body && Object.keys(req.body).length)
+        console.log(req.body);
     next();
 });
 
@@ -44,8 +58,37 @@ app.get('/api/guid', (req, res) => {
     res.send(guid());
 });
 
-app.get('/api/recipe/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})', (req, res) => {
-    res.send(recipes.read(req.params.guid));
+// Recipes
+app.route('/api/recipes/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})')
+    .get((req, res, next) => {
+        db.recipes.find({_id: req.params.guid}).toArray((err, docs) => {
+            if (err)
+                throw err;
+            if (docs[0])
+                res.send(docs[0]);
+            else
+                next();
+        });
+    })
+    .post((req, res) => {
+        if (!req.body._id)
+            req.body._id = guid();
+        db.recipes.save(req.body, (err, id) => {
+            if (err)
+                throw err;
+            if (id)
+                res.send(id);
+        });
+    });
+
+// Get all recipes that belong to the specified user
+app.get('/api/recipes/:user([a-z][a-z0-9]*)', (req, res) => {
+    db.recipes.find({user: req.params.user}).toArray((err, docs) => {
+        if (err)
+            throw err;
+        if (docs)
+            res.send(docs);
+    });
 });
 
 app.listen(process.env.NODE_PORT || 3080, process.env.NODE_IP || 'localhost', () => {
