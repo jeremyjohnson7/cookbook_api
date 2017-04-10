@@ -4,6 +4,7 @@ const app = express();
 
 const db = require('./utils/db');
 const guid = require('./utils/guid');
+const hashes = require('./utils/hashes');
 
 const crud = require('./utils/crud');
 app.crud = crud(app, db);
@@ -25,7 +26,7 @@ app.use((req, res, next) => {
 
 // Debug logging
 app.use((req, res, next) => {
-    console.log(req.method, req.url);
+    console.log(req.method, req.path);
     if (req.body && Object.keys(req.body).length)
         console.log(req.body);
     next();
@@ -41,12 +42,34 @@ app.get('/api/guid', (req, res) => {
     res.send(guid());
 });
 
+// // Authorization check
+// app.use((req, res, next) => {
+//     console.log('Authorized:', req.query['86f7e437faa5a7fce15d1ddcb9eaeaea377667b8'] !== undefined);
+//     if (req.query['86f7e437faa5a7fce15d1ddcb9eaeaea377667b8'] === undefined)
+//         return res.status(401).end('Unauthorized');
+//     next();
+// });
+
 // Authorization check
 app.use((req, res, next) => {
-    console.log('Authorized:', req.query['86f7e437faa5a7fce15d1ddcb9eaeaea377667b8'] !== undefined);
-    if (req.query['86f7e437faa5a7fce15d1ddcb9eaeaea377667b8'] === undefined)
+    // console.log(hashes.sha256.hex('a'));
+
+    const token = JSON.stringify(req.query).replace(/\W/g, '');
+    if (!token.match(/^[0-9a-f]+$/))
         return res.status(401).end('Unauthorized');
-    next();
+
+    db.users.find({token: token}).toArray((err, docs) => {
+        if (err)
+            throw err;
+        if (docs[0] && docs[0].token == token)
+            next();
+        else
+            return res.status(401).end('Unauthorized');  
+    });
+
+    // if (req.query['86f7e437faa5a7fce15d1ddcb9eaeaea377667b8'] === undefined)
+    //     return res.status(401).end('Unauthorized');
+    // next();
 });
 
 // Recipes
@@ -66,7 +89,7 @@ app.get('/api/users/:guid', (req, res) => {
 app.crud(db.users, {
     username: '[a-z][a-z0-9]*',
     password: '[0-9a-f]{64}',
-    groups: ['[a-z][a-z0-9]*']
+    // groups: ['[a-z][a-z0-9]*']
 });
 
 // Get all recipes that belong to the specified user
