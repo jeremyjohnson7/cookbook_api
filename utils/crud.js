@@ -25,7 +25,7 @@ module.exports = (app, db) => (collection, test) =>
         .post((req, res) => {
             req.body._id = req.params.guid;
             if (!validate(req.body, test))
-                return res.status(400).end('Bad request');
+                return res.status(400).end('Bad Request');
             collection.save(req.body, (err, id) => {
                 if (err)
                     throw err;
@@ -41,34 +41,3 @@ module.exports = (app, db) => (collection, test) =>
                     res.send(id);
             });
         });
-
-// // Generic create, read, update, and delete
-// module.exports = (app, db) => (collection, regex) =>
-//     app.route(`/api/${collection}/:id(${regex})`)
-//         .get((req, res, next) => {
-//             db[collection].find({ _id: req.params.id }).toArray((err, docs) => {
-//                 if (err)
-//                     throw err;
-//                 if (docs[0])
-//                     res.send(docs[0]);
-//                 else
-//                     next();
-//             });
-//         })
-//         .post((req, res) => {
-//             req.body._id = req.params.id;
-//             db[collection].save(req.body, (err, id) => {
-//                 if (err)
-//                     throw err;
-//                 if (id)
-//                     res.send(id);
-//             });
-//         })
-//         .delete((req, res) => {
-//             db[collection].remove({ _id: req.params.id }, (err, id) => {
-//                 if (err)
-//                     throw err;
-//                 if (id)
-//                     res.send(id);
-//             });
-//         });
