@@ -10,7 +10,7 @@ const validate = (obj, test) =>
         .every(x => x);
 
 // Generic create, read, update, and delete
-module.exports = (app, db) => (collection, test) =>
+module.exports = (app, db) => (collection, test={}) =>
     app.route(`/api/${collection._name}/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})$`)
         .get((req, res, next) => {
             collection.find({ _id: req.params.guid }).toArray((err, docs) => {

@@ -58,8 +58,6 @@ app.post('/api/login', (req, res) => {
     for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
         passwd = sha512(passwd);
     
-    console.log(passwd);
-
     db.users.find({username: req.body.username}).toArray((err, docs) => {
         if (err)
             throw err;
@@ -114,66 +112,69 @@ app.get('/api/recipes/:group([a-z][a-z0-9]*)', (req, res) => {
     });
 });
 
-// Create user
-app.post('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})$', (req, res) => {
-    let passwd = req.body.password;
-    for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
-        passwd = sha512(passwd);
-
-    db.users.find({_id: req.params.guid}).toArray((err, docs) => {
-        if (err)
-            throw err;
-        if (!docs.length) {
-            const token = sha256(req.params.guid + guid());
-            db.users.save({
-                _id: req.params.guid,
-                username: req.body.username,
-                password: passwd,
-                tokens: [token]
-            }, (err, id) => {
-                if (err)
-                    throw err;
-                if (id)
-                    res.send(token);
-            });
-        }
-    });
-});
-
-// Change password
-app.put('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})$', (req, res) => {
-    let passwd = req.body.password;
-    for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
-        passwd = sha512(passwd);
-    
-    console.log(passwd);
-
-    db.users.find({_id: req.params.guid}).toArray((err, docs) => {
-        if (err)
-            throw err;
-        if (docs[0] && docs[0].username == req.body.username) {
-            const token = sha256(docs[0]._id + guid());
-            db.users.update({username: req.body.username}, {$set: {password: passwd, tokens: [token]}}, (err, id) => {
-                if (err)
-                    throw err;
-                if (id)
-                    res.send(token);
-            });
-        }
-    });
-});
-
-// Prevent getting a user's data (which would expose the password hash)
-app.get('/api/users/:guid', (req, res) => {
-    res.status(403).end();
-});
-
 // Users
-app.crud(db.users, {
-    username: '[a-z][a-z0-9]*',
-    password: '[0-9a-f]{64}',
-    // groups: ['[a-z][a-z0-9]*']
-});
+app.route('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})$')
+    // Create new user
+    .post((req, res) => {
+        let passwd = req.body.password;
+        for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
+            passwd = sha512(passwd);
+
+        db.users.find({_id: req.params.guid}).toArray((err, docs) => {
+            if (err)
+                throw err;
+            if (!docs.length) {
+                const token = sha256(req.params.guid + guid());
+                db.users.save({
+                    _id: req.params.guid,
+                    username: req.body.username,
+                    password: passwd,
+                    tokens: [token]
+                }, (err, id) => {
+                    if (err)
+                        throw err;
+                    if (id)
+                        res.send(token);
+                });
+            }
+        });
+    })
+    // Change password
+    .put((req, res) => {
+        let passwd = req.body.password;
+        for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
+            passwd = sha512(passwd);
+        
+        db.users.find({_id: req.params.guid}).toArray((err, docs) => {
+            if (err)
+                throw err;
+            if (docs[0] && docs[0].username == req.body.username) {
+                const token = sha256(docs[0]._id + guid());
+                db.users.update({
+                    username: req.body.username
+                }, {
+                    $set: {password: passwd, tokens: [token]}
+                }, (err, id) => {
+                    if (err)
+                        throw err;
+                    if (id)
+                        res.send(token);
+                });
+            }
+        });
+    });
+
+// // Prevent getting a user's data (which would expose the password hash)
+// app.get('/api/users/:guid', (req, res) => {
+//     res.status(403).end();
+// });
+
+// // Users
+// app.crud(db.users, {
+//     username: '[a-z][a-z0-9]*',
+//     password: '[0-9a-f]{64}',
+//     // groups: ['[a-z][a-z0-9]*']
+// });
 
 app.use((err, req, res, next) => {
   console.error(err.stack)
