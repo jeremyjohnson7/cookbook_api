@@ -17,10 +17,11 @@ app.use(bodyParser.json());
 
 // Set headers
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 
-        process.env.OPENSHIFT_APP_NAME
-            ? 'http://cookbook.netlify.com'
-            : `http://${process.env.NODE_IP || 'localhost'}:${process.env.NODE_PORT || 3000}`);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // res.setHeader('Access-Control-Allow-Origin', 
+    //     process.env.OPENSHIFT_APP_NAME
+    //         ? 'http://cookbook.netlify.com'
+    //         : `http://${process.env.NODE_IP || 'localhost'}:${process.env.NODE_PORT || 3000}`);
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache, no-store');
