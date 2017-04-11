@@ -15,3 +15,10 @@ global.sha1 = new Hashes.SHA1().hex;
 global.sha256 =  new Hashes.SHA256().hex;
 global.sha512 = new Hashes.SHA512().hex;
 global.rmd160 = new Hashes.RMD160().hex;
+
+global.hash = (algorithm, value, mask=0xfff, shift=0) => {
+    let val = value;
+    for (let x = 0; x < (crc32(value) >> shift & mask); x++)
+        val = algorithm(val);
+    return val;
+};

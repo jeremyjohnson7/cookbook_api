@@ -17,9 +17,10 @@ app.use(bodyParser.json());
 
 // Set headers
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', [
-        'http://cookbook.netlify.com',
-        `http://${process.env.NODE_IP || 'localhost'}:${process.env.NODE_PORT || 3000}`]);
+    res.setHeader('Access-Control-Allow-Origin', 
+        production
+            ? 'http://cookbook.netlify.com'
+            : `http://${process.env.NODE_IP || 'localhost'}:${process.env.NODE_PORT || 3000}`);
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache, no-store');
@@ -54,16 +55,15 @@ app.get('/api/:fun(crc32|md5|sha1|sha256|sha512|rmd160)/:str', (req, res) => {
 
 // Log in
 app.post('/api/login', (req, res) => {
-    let passwd = req.body.password;
-    for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
-        passwd = sha512(passwd);
-    
+    const passwd = hash(sha512, req.body.password, 0xfff, 6);
     db.users.find({username: req.body.username}).toArray((err, docs) => {
         if (err)
             throw err;
         if (docs[0] && docs[0].password == passwd) {
             const token = sha256(docs[0]._id + guid());
-            const tokens = [...docs[0].tokens, token];
+            console.log(token);
+            console.log(hash(sha256, token, 0xfff, 3));
+            const tokens = [...docs[0].tokens, hash(sha256, token, 0xfff, 3)];
             db.users.update({username: req.body.username}, {$set: {tokens: tokens}}, (err, id) => {
                 if (err)
                     throw err;
@@ -76,17 +76,14 @@ app.post('/api/login', (req, res) => {
 
 // Authorization check
 app.use((req, res, next) => {
-    const token = JSON.stringify(req.query).replace(/\W/g, '');
-    if (!token.match(/^[0-9a-f]+$/))
-        return res.status(401).end('Unauthorized');
-
+    const token = hash(sha256, JSON.stringify(req.query).replace(/\W/g, ''), 0xfff, 3);
     db.users.find({tokens: token}).toArray((err, docs) => {
         if (err)
             throw err;
         if (docs[0] && docs[0].tokens.includes(token))
             next();
         else
-            return res.status(401).end('Unauthorized');  
+            return res.status(401).end('Unauthorized');
     });
 });
 
@@ -116,10 +113,7 @@ app.get('/api/recipes/:group([a-z][a-z0-9]*)', (req, res) => {
 app.route('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})$')
     // Create new user
     .post((req, res) => {
-        let passwd = req.body.password;
-        for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
-            passwd = sha512(passwd);
-
+        const passwd = hash(sha512, req.body.password, 0xfff, 6);
         db.users.find({_id: req.params.guid}).toArray((err, docs) => {
             if (err)
                 throw err;
@@ -129,7 +123,7 @@ app.route('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-
                     _id: req.params.guid,
                     username: req.body.username,
                     password: passwd,
-                    tokens: [token]
+                    tokens: [hash(sha256, token, 0xfff, 3)]
                 }, (err, id) => {
                     if (err)
                         throw err;
@@ -141,10 +135,7 @@ app.route('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-
     })
     // Change password
     .put((req, res) => {
-        let passwd = req.body.password;
-        for (let x = 0; x < (crc32(passwd) & 0xfff); x++)
-            passwd = sha512(passwd);
-        
+        const passwd = hash(sha512, req.body.password, 0xfff, 6);
         db.users.find({_id: req.params.guid}).toArray((err, docs) => {
             if (err)
                 throw err;
@@ -153,7 +144,7 @@ app.route('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-
                 db.users.update({
                     username: req.body.username
                 }, {
-                    $set: {password: passwd, tokens: [token]}
+                    $set: {password: passwd, tokens: [hash(sha256, token, 0xfff, 3)]}
                 }, (err, id) => {
                     if (err)
                         throw err;
