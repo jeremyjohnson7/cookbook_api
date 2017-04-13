@@ -36,6 +36,11 @@ app.use((req, res, next) => {
     next();
 });
 
+// Root directory
+app.get('/', (req, res) => {
+    res.status(200).end('Hello world');
+});
+
 // Required health check
 app.get('/health', (req, res) => {
     res.status(200).end();
