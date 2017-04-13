@@ -105,6 +105,16 @@ app.crud(db.recipes, {
     // group: '[a-z][a-z0-9]*'
 });
 
+// Get all recipes
+app.get('/api/recipes/', (req, res) => {
+    db.recipes.find().toArray((err, docs) => {
+        if (err)
+            throw err;
+        if (docs)
+            res.send(docs);
+    });
+});
+
 // Get all recipes that belong to the specified group
 app.get('/api/recipes/:group([a-z][a-z0-9]*)', (req, res) => {
     db.recipes.find({group: req.params.group}).toArray((err, docs) => {
