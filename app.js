@@ -103,7 +103,7 @@ app.crud(db.recipes, {
     ingredients: ['.*'],
     directions: '.*',
     slug: '^[a-z0-9](-?[a-z0-9]+)*$',
-    category: '^[a-z0-9](-?[a-z0-9]+)*$'
+    category: '.*'
     // group: '[a-z][a-z0-9]*'
 });
 
