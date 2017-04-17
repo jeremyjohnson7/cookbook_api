@@ -102,6 +102,8 @@ app.crud(db.recipes, {
     title: '.*',
     ingredients: ['.*'],
     directions: '.*',
+    slug: '^[a-z0-9](-?[a-z0-9]+)*$',
+    category: '^[a-z0-9](-?[a-z0-9]+)*$'
     // group: '[a-z][a-z0-9]*'
 });
 
@@ -115,15 +117,25 @@ app.get('/api/recipes/', (req, res) => {
     });
 });
 
-// Get all recipes that belong to the specified group
-app.get('/api/recipes/:group([a-z][a-z0-9]*)', (req, res) => {
-    db.recipes.find({group: req.params.group}).toArray((err, docs) => {
+// Get all recipes from the specified category
+app.get('/api/recipes/:category([a-z0-9](-?[a-z0-9]+)*)', (req, res) => {
+    db.recipes.find({category: req.params.category}).toArray((err, docs) => {
         if (err)
             throw err;
         if (docs)
             res.send(docs);
     });
 });
+
+// // Get all recipes that belong to the specified group
+// app.get('/api/recipes/:group([a-z][a-z0-9]*)', (req, res) => {
+//     db.recipes.find({group: req.params.group}).toArray((err, docs) => {
+//         if (err)
+//             throw err;
+//         if (docs)
+//             res.send(docs);
+//     });
+// });
 
 // Users
 app.route('/api/users/:guid([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})$')
