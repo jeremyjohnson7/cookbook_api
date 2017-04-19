@@ -59,6 +59,11 @@ app.get('/api/:fun(crc32|md5|sha1|sha256|sha512|rmd160)/:str', (req, res) => {
         res.send(global[req.params.fun](req.params.str));
 });
 
+// CORS nonsense
+app.options('/api/login', (req, res) => {
+    res.status(200).end();
+});
+
 // Log in
 app.post('/api/login', (req, res) => {
     const passwd = hash(sha512, req.body.password, 0xfff, 6);
