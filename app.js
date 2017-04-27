@@ -11,6 +11,11 @@ app.crud = crud(app, db);
 
 const production = process.env.NODE_ENV == 'production';
 
+// Required health check
+app.all('/health', (req, res) => {
+    res.status(200).end();
+});
+
 // Allows access to req.body
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -39,11 +44,6 @@ app.use((req, res, next) => {
 // Root directory
 app.get('/', (req, res) => {
     res.status(200).end('Hello world');
-});
-
-// Required health check
-app.get('/health', (req, res) => {
-    res.status(200).end();
 });
 
 // Generate a new GUID
